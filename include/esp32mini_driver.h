@@ -6,7 +6,7 @@
 #define __ESP_DRIVER_H
 
 #include <Arduino.h>
-#include "libswd/libswd.h"
+#include <libswd/host.h>
 
 // For convenience
 #define LED 8
@@ -37,26 +37,20 @@ class Esp32Driver : public swd::SWDDriver {
     }
 
    protected:
-    virtual uint8_t readBit() override {
-        uint8_t data = 0;
-        setClock(HIGH);
-        hold();
-        setClock(LOW);
-        hold();
-        data = digitalRead(SWDIO);
-        return data & 1;
+    virtual uint8_t readSWDIO() override {
+        return digitalRead(SWDIO);
     }
 
-    virtual void writeBit(uint8_t b) override {
-        setClock(HIGH);
-        hold();
+    virtual void writeSWDIO(uint8_t b) override {
         digitalWrite(SWDIO, b & 1);
-        setClock(LOW);
-        hold();
     }
 
-    virtual void setClock(uint8_t b) override {
-        digitalWrite(SWCLK, b & 1);
+    void setSWCLK() override {
+        digitalWrite(SWCLK, HIGH);
+    }
+
+    virtual void clearSWCLK() override {
+        digitalWrite(SWCLK, LOW);
     }
 
     virtual void hold() override {
