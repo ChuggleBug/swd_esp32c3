@@ -6,3 +6,6 @@
 
 # In case git accidentall changes libswd (managed somewhere else)
 lib/libswd
+
+# Gross MacOS stuff
+.DS_Store
