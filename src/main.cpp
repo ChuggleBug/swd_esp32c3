@@ -38,6 +38,8 @@ static Esp32Driver driver;
 static Esp32Logger logger;
 
 // High level debug
+// In reality the dap should not need to be initialized here
+// but is done to expose the DAP port
 auto dap = swd::dap::DAP(&driver);
 auto host = swd::SWDHost(&driver);
 
@@ -72,6 +74,8 @@ void setup() {
 
 void loop() {
     Serial.println("Entering CLI loop");
+
+    // "exit" to run manual code
     cli_loop();
     
     Serial.println("Testing Manual Code");
@@ -87,7 +91,6 @@ void PC_inject_stm32_example() {
     // Needs to be aligned on any word address.
     // Technically Thumb-2 targets can have halfword alignment
     uint32_t base = 0x2000001C;
-
 
     Serial.printf("Writing Progam binary at 0x%08x\n\r", base);
     host.memoryWriteBlock(base, stm32_data, stm32_data_size);
@@ -105,24 +108,30 @@ void PC_inject_stm32_example() {
 void PC_inject_tiva_example() {
     // Example code inject using the PC
 
+    // Step 1:
     // Needs to be aligned on any word address.
     // Technically Thumb-2 targets can have halfword alignment
     uint32_t base = 0x200020E0;
 
-
+    // Step 2:
     Serial.printf("Writing Progam binary at 0x%08x\n\r", base);
     host.memoryWriteBlock(base, tiva_data, tiva_data_size);
 
+    // Step 3:
     Serial.println("Halting processor");
     host.haltTarget();
 
+    // Step 4:
     Serial.printf("Setting Program Counter to continue at 0x%08x\n\r", base);
     host.registerWrite(swd::target::REG::DebugReturnAddress, base);
 
+    // Step 5:
     Serial.println("Continuing Processor");
     host.continueTarget();
 }
 
+
+// IGNORE ME
 void FPB_inject_example() {
     // Needs to be aligned according to ARMv7-M Architectural Reference C1.11.4
     // In this case it is 8 word alignment
